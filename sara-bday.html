@@ -199,18 +199,6 @@ html{scrollbar-width:none;}
       <h1 class="cover-title">Our Story,<br>My Angel</h1>
       <p class="cover-sub">From that one rejection to forever. Every walk, every laugh, every moment. Just for you.</p>
       
-      <div class="intro-video-wrapper">
-        <!-- Replace src="YOUR_VIDEO_URL" with the actual video file. E.g., src="assets/my-video.mp4" -->
-        <video class="intro-video" controls>
-          <source src="" type="video/mp4">
-        </video>
-        <div class="vid-placeholder">
-          <span>&#127909;</span>
-          <br>Your Video Goes Here
-          <br><small style="font-size:1rem;color:var(--dusty);font-family:'Cormorant Garamond',serif;">(Update src="" in index.html)</small>
-        </div>
-      </div>
-
       <div class="scroll-hint">scroll to begin your story &#8595;</div>
     </div>
   </section>
@@ -403,10 +391,8 @@ html{scrollbar-width:none;}
         </div>
 
         <div class="choice-reveal" id="choiceReveal">
-          <div class="reveal-photo" id="revealPhoto">
-            <span>&#128247;</span>
-            <br>Add Chosen Photo Here
-            <br><small style="font-size:1rem;font-family:'Cormorant Garamond',serif;">(Replace inside index.html)</small>
+          <div class="reveal-photo" id="revealPhoto" style="padding: 0;">
+            <img id="chosenImg" src="" alt="Chosen Gift" style="width:100%; height:100%; object-fit:cover; border-radius:3px;">
           </div>
           <div class="reveal-text" id="revealText">I knew you would pick this one! &#128155;</div>
         </div>
@@ -660,16 +646,26 @@ function playChoice(choiceNum) {
   var title = document.getElementById('choiceTitle');
   var sub = document.getElementById('choiceSub');
   var text = document.getElementById('revealText');
+  var img = document.getElementById('chosenImg');
   
   // Hide the grid
   grid.style.opacity = '0';
   setTimeout(function(){
     grid.style.display = 'none';
     
-    // Set custom text based on choice if you want
-    if(choiceNum === 1) text.innerHTML = "Ah, Gift 1! Always going for the classic. I love you! &#128155;";
-    if(choiceNum === 2) text.innerHTML = "Gift 2! The sweet middle. You are the best thing to happen to me. &#10024;";
-    if(choiceNum === 3) text.innerHTML = "Gift 3! Saving the best for last. You have my whole heart! &#128142;";
+    // Set custom text and image based on choice
+    if(choiceNum === 1) {
+      text.innerHTML = "Ah, Gift 1! Always going for the classic. I love you! &#128155;";
+      img.src = "option1.jpeg";
+    }
+    if(choiceNum === 2) {
+      text.innerHTML = "Gift 2! The sweet middle. You are the best thing to happen to me. &#10024;";
+      img.src = "option2.jpeg";
+    }
+    if(choiceNum === 3) {
+      text.innerHTML = "Gift 3! Saving the best for last. You have my whole heart! &#128142;";
+      img.src = "option3.jpeg";
+    }
     
     title.innerHTML = "A Beautiful Choice";
     sub.innerHTML = "Just like when I chose you.";
