@@ -102,6 +102,26 @@ body{background:#0f0615;color:var(--cream);font-family:'Cormorant Garamond',seri
 .finale-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:rgba(255,240,245,.55);margin-top:1.5rem;animation:popIn .5s ease 1s both;}
 .confetti-row{font-size:1.8rem;letter-spacing:.5rem;margin-top:2rem;animation:popIn .5s ease 1.2s both;}
 @keyframes popIn{from{transform:scale(0) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0deg);opacity:1;}}
+/* Intro Video */
+.intro-video-wrapper{width:100%;max-width:800px;margin:2rem auto 4rem;position:relative;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(236,64,122,.2);border:2px solid rgba(240,98,146,.4);background:rgba(15,6,21,.6);aspect-ratio:16/9;}
+.intro-video{width:100%;height:100%;object-fit:cover;display:block;}
+.vid-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gold);font-family:'Caveat',cursive;font-size:1.5rem;}
+
+/* Choice Game */
+.choice-game{margin:4rem 0;text-align:center;}
+.choice-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-style:italic;color:var(--cream);margin-bottom:1.5rem;}
+.choice-subtitle{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(255,240,245,.7);margin-bottom:2rem;}
+.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;transition:opacity .5s ease;}
+.choice-card{background:rgba(255,240,245,.04);border:2px dashed rgba(236,64,122,.4);border-radius:8px;padding:3rem 1rem;cursor:pointer;transition:transform .4s ease,box-shadow .4s ease,border-color .4s ease,background .4s ease;}
+.choice-card:hover{transform:translateY(-8px);box-shadow:0 15px 40px rgba(236,64,122,.25);border-color:var(--gold);background:rgba(236,64,122,.1);}
+.choice-card-icon{font-size:3rem;display:block;margin-bottom:1rem;transition:transform .4s;}
+.choice-card:hover .choice-card-icon{transform:scale(1.2) rotate(5deg);}
+.choice-card-label{font-family:'Caveat',cursive;font-size:1.2rem;color:var(--gold);}
+.choice-reveal{display:none;opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;margin-top:2rem;}
+.choice-reveal.show{display:block;opacity:1;transform:translateY(0);}
+.reveal-photo{width:100%;max-width:400px;aspect-ratio:3/4;background:rgba(30,5,20,.1);border:3px solid var(--rust);margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;color:var(--dusty);flex-direction:column;border-radius:4px;box-shadow:0 15px 45px rgba(194,24,91,.3);}
+.reveal-text{font-family:'Caveat',cursive;font-size:1.5rem;color:var(--blush);}
+
 .nav-dots{position:fixed;right:1rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.6rem;z-index:100;}
 .nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(253,246,236,.18);cursor:pointer;transition:all .3s;border:1px solid rgba(253,246,236,.25);}
 .nav-dot.active{background:var(--rust);transform:scale(1.5);border-color:var(--rust);}
@@ -178,6 +198,19 @@ html{scrollbar-width:none;}
       <div class="cover-tag">29th March 2026</div>
       <h1 class="cover-title">Our Story,<br>My Angel</h1>
       <p class="cover-sub">From that one rejection to forever. Every walk, every laugh, every moment. Just for you.</p>
+      
+      <div class="intro-video-wrapper">
+        <!-- Replace src="YOUR_VIDEO_URL" with the actual video file. E.g., src="assets/my-video.mp4" -->
+        <video class="intro-video" controls>
+          <source src="" type="video/mp4">
+        </video>
+        <div class="vid-placeholder">
+          <span>&#127909;</span>
+          <br>Your Video Goes Here
+          <br><small style="font-size:1rem;color:var(--dusty);font-family:'Cormorant Garamond',serif;">(Update src="" in index.html)</small>
+        </div>
+      </div>
+
       <div class="scroll-hint">scroll to begin your story &#8595;</div>
     </div>
   </section>
@@ -348,6 +381,38 @@ html{scrollbar-width:none;}
           <li><span class="bullet">&#9825;</span> You are my angel. My cutu princess. My favourite person on this entire planet.</li>
         </ul>
       </div>
+
+      <!-- CHOOSE 1 FROM 3 GAME -->
+      <div class="choice-game">
+        <h3 class="choice-title" id="choiceTitle">A Little Game For You</h3>
+        <p class="choice-subtitle" id="choiceSub">Pick one of the three gifts below. Choose carefully, my princess!</p>
+        
+        <div class="choice-grid" id="choiceGrid">
+          <div class="choice-card" onclick="playChoice(1)">
+            <span class="choice-card-icon">&#127873;</span>
+            <span class="choice-card-label">Gift 1</span>
+          </div>
+          <div class="choice-card" onclick="playChoice(2)">
+            <span class="choice-card-icon">&#128140;</span>
+            <span class="choice-card-label">Gift 2</span>
+          </div>
+          <div class="choice-card" onclick="playChoice(3)">
+            <span class="choice-card-icon">&#128142;</span>
+            <span class="choice-card-label">Gift 3</span>
+          </div>
+        </div>
+
+        <div class="choice-reveal" id="choiceReveal">
+          <div class="reveal-photo" id="revealPhoto">
+            <span>&#128247;</span>
+            <br>Add Chosen Photo Here
+            <br><small style="font-size:1rem;font-family:'Cormorant Garamond',serif;">(Replace inside index.html)</small>
+          </div>
+          <div class="reveal-text" id="revealText">I knew you would pick this one! &#128155;</div>
+        </div>
+      </div>
+      <!-- END CHOICE GAME -->
+
     </div>
   </div>
 
@@ -587,6 +652,40 @@ function goTo(i){if(secEls[i])secEls[i].scrollIntoView({behavior:'smooth'});}
     }
   });
 })();
+
+// Choice Game Logic
+function playChoice(choiceNum) {
+  var grid = document.getElementById('choiceGrid');
+  var reveal = document.getElementById('choiceReveal');
+  var title = document.getElementById('choiceTitle');
+  var sub = document.getElementById('choiceSub');
+  var text = document.getElementById('revealText');
+  
+  // Hide the grid
+  grid.style.opacity = '0';
+  setTimeout(function(){
+    grid.style.display = 'none';
+    
+    // Set custom text based on choice if you want
+    if(choiceNum === 1) text.innerHTML = "Ah, Gift 1! Always going for the classic. I love you! &#128155;";
+    if(choiceNum === 2) text.innerHTML = "Gift 2! The sweet middle. You are the best thing to happen to me. &#10024;";
+    if(choiceNum === 3) text.innerHTML = "Gift 3! Saving the best for last. You have my whole heart! &#128142;";
+    
+    title.innerHTML = "A Beautiful Choice";
+    sub.innerHTML = "Just like when I chose you.";
+    
+    // Show the reveal
+    reveal.classList.add('show');
+    
+    // Fire click burst effect manually on reveal
+    var ev = new MouseEvent('click', {
+        clientX: window.innerWidth / 2,
+        clientY: window.innerHeight / 2
+    });
+    document.dispatchEvent(ev);
+
+  }, 500);
+}
 </script>
 </body>
 </html>
