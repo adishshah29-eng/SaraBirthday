@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Sara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Caveat:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--cream:#fdf6ec;--warm:#f5e8d0;--parchment:#ede0c8;--ink:#2a1f14;--rust:#b85c38;--blush:#d4826a;--gold:#c9973a;--dusty:#9b7e6f;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:#100a06;color:var(--cream);font-family:'Cormorant Garamond',serif;overflow-x:hidden;}
+#lockScreen{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d0806;transition:opacity 1.2s ease,transform 1.2s ease;}
+#lockScreen.unlocked{opacity:0;transform:scale(1.07);pointer-events:none;}
+#lockCanvas{position:absolute;inset:0;width:100%;height:100%;}
+.lock-content{position:relative;z-index:2;text-align:center;padding:2rem 1.5rem;}
+.lock-label{font-family:'Caveat',cursive;font-size:1rem;color:var(--blush);letter-spacing:.3em;text-transform:uppercase;margin-bottom:.8rem;opacity:0;animation:fadeUp 1s ease .5s forwards;}
+.lock-name{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,9vw,5.5rem);font-style:italic;color:var(--cream);line-height:1.1;margin-bottom:.4rem;opacity:0;animation:fadeUp 1s ease .8s forwards;}
+.lock-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:rgba(253,246,236,.45);margin-bottom:2.5rem;opacity:0;animation:fadeUp 1s ease 1.1s forwards;}
+#btnWrap{opacity:0;animation:fadeUp 1s ease 1.4s forwards;}
+#openBtn{display:inline-block;margin-top:1.8rem;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;padding:.9rem 3rem;border-radius:2px;cursor:pointer;letter-spacing:.1em;position:relative;overflow:hidden;transition:color .4s;animation:glowPulse 2s ease-in-out infinite;}
+#openBtn::before{content:'';position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s ease;z-index:-1;}
+#openBtn:hover{color:var(--ink);}
+#openBtn:hover::before{transform:scaleX(1);}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 8px rgba(201,151,58,.3);}50%{box-shadow:0 0 26px rgba(201,151,58,.75);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+#storyWrap{opacity:0;pointer-events:none;transition:opacity 1s ease;}
+#storyWrap.visible{opacity:1;pointer-events:all;}
+#cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative;background:radial-gradient(ellipse at 50% 40%,#1e100a 0%,#0d0806 100%);}
+#bgCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.cover-inner{position:relative;z-index:2;}
+.cover-tag{font-family:'Caveat',cursive;font-size:1rem;color:var(--blush);letter-spacing:.3em;text-transform:uppercase;margin-bottom:1rem;}
+.cover-title{font-family:'Playfair Display',serif;font-size:clamp(3rem,9vw,6rem);font-weight:700;font-style:italic;color:var(--cream);line-height:1.05;margin-bottom:.5rem;}
+.cover-sub{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:rgba(253,246,236,.5);max-width:480px;margin:0 auto 3rem;line-height:1.75;}
+.scroll-hint{font-family:'Caveat',cursive;font-size:.95rem;color:var(--blush);animation:bounce 2s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(8px);}}
+.chapter-divider{text-align:center;padding:4rem 2rem 1rem;}
+.chapter-num{font-family:'Caveat',cursive;font-size:.85rem;color:var(--blush);letter-spacing:.35em;text-transform:uppercase;}
+.chapter-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3rem);font-style:italic;color:var(--cream);margin-top:.4rem;line-height:1.2;}
+.chapter-rule{width:60px;height:1px;background:var(--rust);margin:1rem auto 0;}
+.scene-strip{width:100%;height:200px;display:block;}
+.section{max-width:720px;margin:0 auto;padding:2rem 1.5rem 3rem;position:relative;z-index:1;}
+.memory-card{background:rgba(253,246,236,.04);border:1px solid rgba(237,224,200,.14);border-top:2px solid var(--rust);padding:2rem 2rem 2.5rem;margin:2rem 0;opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease;}
+.memory-card.visible{opacity:1;transform:translateY(0);}
+.memory-emoji{font-size:2rem;display:block;margin-bottom:.8rem;}
+.memory-card h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-style:italic;color:var(--cream);margin-bottom:.8rem;}
+.memory-card p{font-size:1.1rem;line-height:1.9;color:rgba(253,246,236,.75);font-weight:300;}
+.annotation{font-family:'Caveat',cursive;font-size:1rem;color:var(--rust);display:block;margin-top:.8rem;}
+.quote-block{text-align:center;padding:3rem 2rem;opacity:0;transform:scale(.96);transition:opacity .9s ease,transform .9s ease;}
+.quote-block.visible{opacity:1;transform:scale(1);}
+.quote-deco{font-family:'Playfair Display',serif;font-size:5rem;color:rgba(184,92,56,.2);line-height:.8;}
+.quote-block blockquote{font-family:'Playfair Display',serif;font-size:clamp(1.2rem,3vw,1.6rem);font-style:italic;color:var(--cream);line-height:1.75;}
+.quote-block cite{font-family:'Caveat',cursive;font-size:1rem;color:var(--blush);display:block;margin-top:.8rem;}
+.polaroid-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0;}
+.polaroid{background:#fdf6ec;padding:1rem 1rem 2.5rem;opacity:0;transition:opacity .7s ease,transform .7s ease;}
+.polaroid:nth-child(odd){transform:rotate(-2.5deg) translateY(15px);}
+.polaroid:nth-child(even){transform:rotate(2.5deg) translateY(15px);}
+.polaroid.visible{opacity:1;}
+.polaroid:nth-child(odd).visible{transform:rotate(-2.5deg) translateY(0);}
+.polaroid:nth-child(even).visible{transform:rotate(2.5deg) translateY(0);}
+.photo-slot{width:100%;aspect-ratio:1;background:rgba(30,15,5,.08);border:2px dashed rgba(184,92,56,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;font-family:'Caveat',cursive;font-size:.85rem;color:var(--dusty);text-align:center;padding:1rem;}
+.photo-slot img{width:100%;height:100%;object-fit:cover;}
+.polaroid-label{font-family:'Caveat',cursive;font-size:.88rem;color:var(--dusty);text-align:center;margin-top:.5rem;}
+.timeline{position:relative;padding-left:2.5rem;margin:2rem 0;}
+.timeline::before{content:'';position:absolute;left:.6rem;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--rust),transparent);}
+.timeline-item{position:relative;margin-bottom:2rem;opacity:0;transform:translateX(-14px);transition:opacity .6s ease,transform .6s ease;}
+.timeline-item.visible{opacity:1;transform:translateX(0);}
+.tl-dot{position:absolute;left:-2.1rem;top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--rust);border:2px solid #100a06;}
+.timeline-item h4{font-family:'Caveat',cursive;font-size:1.1rem;color:var(--gold);margin-bottom:.3rem;}
+.timeline-item p{font-size:1.05rem;color:rgba(253,246,236,.7);line-height:1.75;font-weight:300;}
+.highlight-bar{background:linear-gradient(135deg,rgba(184,92,56,.1),rgba(201,151,58,.06));border-left:3px solid var(--rust);padding:2rem;margin:2rem 0;opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;}
+.highlight-bar.visible{opacity:1;transform:translateY(0);}
+.highlight-bar h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;color:var(--cream);margin-bottom:.7rem;}
+.highlight-bar p{font-size:1.1rem;line-height:1.85;color:rgba(253,246,236,.72);font-weight:300;}
+.love-list{list-style:none;margin:1.5rem 0;}
+.love-list li{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:1rem;font-size:1.1rem;line-height:1.7;color:rgba(253,246,236,.75);opacity:0;transform:translateX(-10px);transition:opacity .5s ease,transform .5s ease;}
+.love-list li.visible{opacity:1;transform:translateX(0);}
+.bullet{color:var(--rust);flex-shrink:0;margin-top:3px;}
+.link-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.link-slot{background:rgba(253,246,236,.04);border:1px dashed rgba(184,92,56,.35);border-radius:2px;padding:1.2rem;display:flex;flex-direction:column;gap:.4rem;text-decoration:none;transition:background .3s,border-color .3s;}
+.link-slot:hover{background:rgba(184,92,56,.08);border-color:var(--rust);}
+.link-slot-icon{font-size:1.5rem;}
+.link-slot-label{font-family:'Caveat',cursive;font-size:.95rem;color:var(--gold);}
+.link-slot-hint{font-family:'Cormorant Garamond',serif;font-size:.82rem;color:var(--dusty);font-style:italic;}
+#final-letter{padding:5rem 1.5rem;background:#100a06;display:flex;align-items:center;justify-content:center;}
+.letter-paper{background:#fdf6ec;max-width:600px;width:100%;padding:3.5rem 3rem 4rem;color:var(--ink);position:relative;opacity:0;transform:translateY(30px) rotate(-.5deg);transition:opacity 1s ease,transform 1s ease;box-shadow:0 20px 60px rgba(0,0,0,.55);}
+.letter-paper.visible{opacity:1;transform:translateY(0) rotate(-.5deg);}
+.letter-lines{position:absolute;inset:0;background-image:repeating-linear-gradient(transparent,transparent 36px,rgba(170,140,110,.18) 36px,rgba(170,140,110,.18) 37px);pointer-events:none;}
+.letter-date{font-family:'Caveat',cursive;font-size:.95rem;color:var(--dusty);text-align:right;margin-bottom:1.5rem;position:relative;}
+.letter-dear{font-family:'Playfair Display',serif;font-size:1.4rem;font-style:italic;color:var(--rust);margin-bottom:1.5rem;position:relative;}
+.letter-body{font-family:'Cormorant Garamond',serif;font-size:1.12rem;line-height:2;color:#3d2e22;font-weight:300;position:relative;}
+.letter-body p{margin-bottom:1.1rem;}
+.letter-sign{font-family:'Caveat',cursive;font-size:1.4rem;color:var(--rust);margin-top:2rem;text-align:right;position:relative;}
+#finale{text-align:center;padding:6rem 2rem;background:#0d0806;position:relative;overflow:hidden;}
+#finaleCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.finale-inner{position:relative;z-index:2;}
+.finale-emoji{font-size:3.5rem;display:block;margin-bottom:1.5rem;animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .3s both;}
+.finale-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,7vw,4rem);font-style:italic;color:var(--cream);animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .5s both;}
+.finale-name{font-family:'Caveat',cursive;font-size:clamp(2.5rem,8vw,5.5rem);color:var(--gold);animation:popIn .6s cubic-bezier(.34,1.56,.64,1) .7s both;line-height:1.1;}
+.finale-sub{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:rgba(253,246,236,.5);margin-top:1.5rem;animation:popIn .5s ease 1s both;}
+.confetti-row{font-size:1.8rem;letter-spacing:.5rem;margin-top:2rem;animation:popIn .5s ease 1.2s both;}
+@keyframes popIn{from{transform:scale(0) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0deg);opacity:1;}}
+.nav-dots{position:fixed;right:1rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.6rem;z-index:100;}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(253,246,236,.18);cursor:pointer;transition:all .3s;border:1px solid rgba(253,246,236,.25);}
+.nav-dot.active{background:var(--rust);transform:scale(1.5);border-color:var(--rust);}
+@media(max-width:500px){.polaroid-grid,.link-grid{grid-template-columns:1fr;}.section{padding:1.5rem 1rem 2rem;}.letter-paper{padding:2rem 1.5rem 2.5rem;}}
+</style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <canvas id="lockCanvas"></canvas>
+  <div class="lock-content">
+    <div class="lock-label">A Birthday Surprise</div>
+    <div class="lock-name">For Sara</div>
+    <div class="lock-sub">my angel. my cutu princess.</div>
+    <div id="btnWrap">
+      <button id="openBtn" onclick="revealStory()">Happy Birthday SaraBaby &nbsp;&#129412;</button>
+    </div>
+  </div>
+</div>
+
+<div id="storyWrap">
+  <div class="nav-dots" id="navDots">
+    <div class="nav-dot active" onclick="goTo(0)"></div>
+    <div class="nav-dot" onclick="goTo(1)"></div>
+    <div class="nav-dot" onclick="goTo(2)"></div>
+    <div class="nav-dot" onclick="goTo(3)"></div>
+    <div class="nav-dot" onclick="goTo(4)"></div>
+    <div class="nav-dot" onclick="goTo(5)"></div>
+  </div>
+
+  <section id="cover" data-sec="0">
+    <canvas id="bgCanvas"></canvas>
+    <div class="cover-inner">
+      <div class="cover-tag">29th March 2026</div>
+      <h1 class="cover-title">Our Story,<br>My Angel</h1>
+      <p class="cover-sub">From that one rejection to forever. Every walk, every laugh, every moment. Just for you.</p>
+      <div class="scroll-hint">scroll to begin your story &#8595;</div>
+    </div>
+  </section>
+
+  <div data-sec="1">
+    <div class="chapter-divider">
+      <div class="chapter-num">Chapter One</div>
+      <h2 class="chapter-title">The Boy Who Made a Mistake</h2>
+      <div class="chapter-rule"></div>
+    </div>
+    <canvas class="scene-strip" id="sc1"></canvas>
+    <div class="section">
+      <div class="memory-card">
+        <span class="memory-emoji">&#127979;</span>
+        <h3>8th Standard. Same School. Same World.</h3>
+        <p>We were in the same school once. Same corridors, same sun. You, being you. And me, being the world's biggest idiot.</p>
+        <span class="annotation">biggest mistake of my life, honestly &#128532;</span>
+      </div>
+      <div class="quote-block">
+        <div class="quote-deco">"</div>
+        <blockquote>He said no. She walked away. The universe made a note, and waited.</blockquote>
+        <cite>somewhere between 8th grade and destiny</cite>
+      </div>
+      <div class="memory-card">
+        <span class="memory-emoji">&#129680;</span>
+        <h3>The Rejection That Haunts Me</h3>
+        <p>I rejected her. There it is. Written down. A younger version of me made the worst call of his life. And I have spent every day since being grateful the universe did not let that be the end of our story.</p>
+        <span class="annotation">Sara if you are reading this, I am so sorry &#129306; and also so glad you gave us a chance anyway</span>
+      </div>
+    </div>
+  </div>
+
+  <div data-sec="2">
+    <div class="chapter-divider">
+      <div class="chapter-num">Chapter Two</div>
+      <h2 class="chapter-title">The Internship. The Month. The Magic.</h2>
+      <div class="chapter-rule"></div>
+    </div>
+    <canvas class="scene-strip" id="sc2"></canvas>
+    <div class="section">
+      <div class="highlight-bar">
+        <h3>Prabhadevi Station to Parmar Properties</h3>
+        <p>That walk. That specific walk. I do not know how many steps it was but I want to walk it a thousand more times. Just you beside me, Mumbai heat, and the whole world feeling very small and very good.</p>
+        <span style="color:var(--gold);font-family:'Caveat',cursive;font-size:1rem;display:block;margin-top:.8rem;">this one hits different every single time &#127751;</span>
+      </div>
+
+      <div class="polaroid-grid">
+        <div class="polaroid">
+          <!-- PHOTO 1: replace photo-slot div with: <img src="YOUR_PHOTO_URL" style="width:100%;height:100%;object-fit:cover;"> -->
+          <div class="photo-slot"><span>&#128247;</span>Add photo here<br><small>Replace with img tag</small></div>
+          <div class="polaroid-label">UNO fights (she cheated 100%)</div>
+        </div>
+        <div class="polaroid">
+          <!-- PHOTO 2 -->
+          <div class="photo-slot"><span>&#128247;</span>Add photo here<br><small>Replace with img tag</small></div>
+          <div class="polaroid-label">Vada Pav at the station &#127822;</div>
+        </div>
+        <div class="polaroid">
+          <!-- PHOTO 3 -->
+          <div class="photo-slot"><span>&#128247;</span>Add photo here<br><small>Replace with img tag</small></div>
+          <div class="polaroid-label">Debugging hours together &#128187;</div>
+        </div>
+        <div class="polaroid">
+          <!-- PHOTO 4 -->
+          <div class="photo-slot"><span>&#128247;</span>Add photo here<br><small>Replace with img tag</small></div>
+          <div class="polaroid-label">Doodles on my hand &#127800;</div>
+        </div>
+      </div>
+
+      <div class="memory-card">
+        <span class="memory-emoji">&#9997;&#65039;</span>
+        <h3>She Drew on My Hands</h3>
+        <p>Sara would draw on my hands. Little doodles. Little hints. At the time I thought it was just cute. Now I know it was her language. She was writing herself into my story, one tiny drawing at a time.</p>
+        <span class="annotation">those hands have not been the same since &#129393;</span>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item"><div class="tl-dot"></div><h4>&#127183; Uno sessions</h4><p>Competitive, chaotic, full of laughter. I think she won most. I let her. (I did not let her.)</p></div>
+        <div class="timeline-item"><div class="tl-dot"></div><h4>&#128694; The walks</h4><p>Prabhadevi station to Parmar Properties. Simple route. Permanent memory.</p></div>
+        <div class="timeline-item"><div class="tl-dot"></div><h4>&#128187; Building things side by side</h4><p>Hours debugging, hours creating. Her beside me, me beside her. Work never felt like this before.</p></div>
+        <div class="timeline-item"><div class="tl-dot"></div><h4>&#127822; Vada Pav and Pani Puri</h4><p>The best food has always been the food you eat standing at a station with someone you love.</p></div>
+        <div class="timeline-item"><div class="tl-dot"></div><h4>&#128155; That one month</h4><p>I fell in love. Completely. Instantly. Without any warning at all.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div data-sec="3">
+    <div class="chapter-divider">
+      <div class="chapter-num">Chapter Three</div>
+      <h2 class="chapter-title">And Then We Became Us</h2>
+      <div class="chapter-rule"></div>
+    </div>
+    <canvas class="scene-strip" id="sc3"></canvas>
+    <div class="section">
+      <div class="memory-card">
+        <span class="memory-emoji">&#127851;</span>
+        <h3>The Chocolates. The Surprises. The Everything.</h3>
+        <p>She shows up with chocolates. Random gifts. Little things that say I was thinking about you. No occasion needed. Just love with no reason and no expiry date.</p>
+        <span class="annotation">this is why she is the best and I am very undeserving &#128128;</span>
+      </div>
+
+      <div class="highlight-bar">
+        <h3>Borivali. 5 to 10 Minutes. Just To See Her Face.</h3>
+        <p>We would meet at Borivali sometimes. Just for a few minutes. Not for coffee, not for a date. Just to see each other. That is what love is. Travelling for a glimpse, and it being completely worth it.</p>
+      </div>
+
+      <div class="memory-card">
+        <span class="memory-emoji">&#128172;</span>
+        <h3>The Quarrels. The Endless Ones.</h3>
+        <p>We fight. Oh we fight. Long ones, short ones, ones that start about nothing. But every argument has one thing in common. I come back, she comes back, and we are still here. Still us. Every single time.</p>
+        <span class="annotation">because the good is so much bigger than the fights &#127807;</span>
+      </div>
+
+      <div class="memory-card" style="opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease;">
+        <span class="memory-emoji">&#128247;</span>
+        <h3>Our Favourite Moments</h3>
+        <p style="margin-bottom:1.2rem;">Every picture worth a thousand words. These are just ours.</p>
+        <div class="link-grid">
+          <!-- LINK 1: replace href="#" with your Google Photos / Drive album link -->
+          <a class="link-slot" href="#" target="_blank">
+            <span class="link-slot-icon">&#128444;&#65039;</span>
+            <span class="link-slot-label">Our Photo Album</span>
+            <span class="link-slot-hint">Paste Google Photos link in href</span>
+          </a>
+          <!-- LINK 2: replace href="#" with favourite selfie link -->
+          <a class="link-slot" href="#" target="_blank">
+            <span class="link-slot-icon">&#129335;</span>
+            <span class="link-slot-label">That One Selfie</span>
+            <span class="link-slot-hint">Paste your fav photo link in href</span>
+          </a>
+          <!-- LINK 3: replace href="#" with a reel or video link -->
+          <a class="link-slot" href="#" target="_blank">
+            <span class="link-slot-icon">&#127916;</span>
+            <span class="link-slot-label">A Reel / Video</span>
+            <span class="link-slot-hint">Paste Instagram / YouTube link in href</span>
+          </a>
+          <!-- LINK 4: replace href="#" with your song link -->
+          <a class="link-slot" href="#" target="_blank">
+            <span class="link-slot-icon">&#127925;</span>
+            <span class="link-slot-label">Our Song</span>
+            <span class="link-slot-hint">Paste Spotify / YouTube link in href</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        <div class="quote-deco">"</div>
+        <blockquote>He bows to her.<br>He calls her his angel, his cutu princess.<br>She looks at him in that way she has.<br>And that is everything.</blockquote>
+        <cite>their story, page 1 of forever</cite>
+      </div>
+
+      <div class="memory-card">
+        <span class="memory-emoji">&#127828;</span>
+        <h3>McDonald's. Our Spot.</h3>
+        <p>Some couples have fancy restaurants. We have Macd. And honestly, I would not trade it. There is something about our table, our orders, the easy silence between us. It is home. You are home.</p>
+        <span class="annotation">our fav spot forever &#127839;&#128155;</span>
+      </div>
+
+      <div style="margin:2rem 0;">
+        <p style="font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:var(--cream);margin-bottom:1rem;">Things I love about you.</p>
+        <ul class="love-list">
+          <li><span class="bullet">&#9825;</span> The way you look at me. You know the look. That one.</li>
+          <li><span class="bullet">&#9825;</span> How you draw on my hands like they belong to you. They do.</li>
+          <li><span class="bullet">&#9825;</span> Every random chocolate, every unexpected gift, every time you choose me.</li>
+          <li><span class="bullet">&#9825;</span> That you travelled to Borivali just to see my face for five minutes. Five minutes, Sara.</li>
+          <li><span class="bullet">&#9825;</span> How we can fight and still, always, find our way back to each other.</li>
+          <li><span class="bullet">&#9825;</span> Pani puri at the station. Vada pav in the rush. Every small thing with you is a memory.</li>
+          <li><span class="bullet">&#9825;</span> You are my angel. My cutu princess. My favourite person on this entire planet.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <section id="final-letter" data-sec="4">
+    <div class="letter-paper">
+      <div class="letter-lines"></div>
+      <div class="letter-date">29th March, 2026 &#129412;</div>
+      <div class="letter-dear">My dearest Sara,</div>
+      <div class="letter-body">
+        <p>Happy Birthday, my angel.</p>
+        <p>I want you to know, I went back and read our story today, the way you might read a favourite book. The internship. The walks. The Uno games I definitely let you win. The hand drawings. The station food. The five minute meetings in Borivali just to see your face.</p>
+        <p>That one month changed me. You changed me. I fell in love with you before I even had words for it, and every single day since I have been more sure.</p>
+        <p>I know I did not start out right. That 8th standard rejection is something I carry with me, because you deserved better from the very beginning. But I am so grateful, endlessly and completely grateful, that the universe gave us a second chance at that internship and that you gave me one too.</p>
+        <p>You bring me chocolates for no reason. You show up just to see my face. You draw on my hands. You give me hints. You fight with me and then come back. You look at me in that way that makes me feel like the luckiest person alive.</p>
+        <p>I bow to you, my cutu princess. Not just in jest. Truly. You are extraordinary.</p>
+        <p>Today and every day, I am yours.</p>
+      </div>
+      <div class="letter-sign">Always and forever,<br>Your idiot &#128155;</div>
+    </div>
+  </section>
+
+  <section id="finale" data-sec="5">
+    <canvas id="finaleCanvas"></canvas>
+    <div class="finale-inner">
+      <span class="finale-emoji">&#127874;</span>
+      <div class="finale-title">Happy Birthday,</div>
+      <div class="finale-name">Sara &#129412;</div>
+      <p class="finale-sub">My angel. My cutu princess. My whole story.</p>
+      <div class="confetti-row">&#127881; &#127800; &#127851; &#128155; &#127874; &#127800; &#127881;</div>
+    </div>
+  </section>
+</div>
+
+<script>
+
+
+function revealStory(){
+  document.getElementById('lockScreen').classList.add('unlocked');
+  document.getElementById('storyWrap').classList.add('visible');
+  setTimeout(function(){
+    document.getElementById('lockScreen').style.display='none';
+    initBgScene();
+    initChScene('sc1',0xb85c38,0x9b7e6f,'iso');
+    initChScene('sc2',0xd4826a,0xc9973a,'torus');
+    initChScene('sc3',0xc9973a,0xb85c38,'box');
+    initFinale();
+  },1300);
+}
+
+function mkR(canvas){
+  var r=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  r.setPixelRatio(Math.min(devicePixelRatio,2));
+  return r;
+}
+function autoResize(R,cam,canvas){
+  function rs(){var w=canvas.clientWidth,h=canvas.clientHeight||200;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  rs();window.addEventListener('resize',rs);
+}
+
+// LOCK SCENE
+(function(){
+  var canvas=document.getElementById('lockCanvas');
+  var R=mkR(canvas);var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(60,1,.1,100);cam.position.z=9;
+  autoResize(R,cam,canvas);
+  var cols=[0xb85c38,0xd4826a,0xc9973a,0xfdf6ec,0x9b7e6f];
+  var pts=[];
+  for(var i=0;i<100;i++){
+    var m=new THREE.Mesh(new THREE.SphereGeometry(.06,6,6),new THREE.MeshBasicMaterial({color:cols[i%5],transparent:true,opacity:.4+Math.random()*.4}));
+    m.position.set((Math.random()-.5)*18,(Math.random()-.5)*10,(Math.random()-.5)*6);
+    m.userData={vy:.003+Math.random()*.007,ph:Math.random()*Math.PI*2,isSphere:true};
+    scene.add(m);pts.push(m);
+  }
+  for(var i=0;i<7;i++){
+    var m=new THREE.Mesh(new THREE.TorusGeometry(.5+Math.random()*.8,.04,8,32),new THREE.MeshBasicMaterial({color:0xb85c38,transparent:true,opacity:.1+Math.random()*.15,wireframe:true}));
+    m.position.set((Math.random()-.5)*12,(Math.random()-.5)*8,(Math.random()-.5)*4);
+    m.rotation.set(Math.random(),Math.random(),Math.random());
+    m.userData={rz:.004+Math.random()*.004};
+    scene.add(m);pts.push(m);
+  }
+  var t=0;
+  (function loop(){requestAnimationFrame(loop);t+=.01;
+    pts.forEach(function(p){
+      if(p.userData.isSphere){p.position.y+=p.userData.vy;p.position.x+=Math.sin(t+p.userData.ph)*.003;if(p.position.y>7)p.position.y=-7;}
+      else{p.rotation.z+=p.userData.rz;p.rotation.x+=.003;p.position.y+=.002;if(p.position.y>7)p.position.y=-7;}
+    });
+    R.render(scene,cam);
+  })();
+})();
+
+function initBgScene(){
+  var canvas=document.getElementById('bgCanvas');
+  var R=mkR(canvas);var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(55,1,.1,100);cam.position.z=10;
+  autoResize(R,cam,canvas);
+  var sg=new THREE.BufferGeometry();var sp=new Float32Array(700*3);
+  for(var i=0;i<700*3;i++)sp[i]=(Math.random()-.5)*40;
+  sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
+  scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xfdf6ec,size:.05,transparent:true,opacity:.55})));
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.2,32,32),new THREE.MeshBasicMaterial({color:0x3d1208,transparent:true,opacity:.6})));
+  var shell=new THREE.Mesh(new THREE.SphereGeometry(1.26,16,16),new THREE.MeshBasicMaterial({color:0xb85c38,transparent:true,opacity:.14,wireframe:true}));
+  scene.add(shell);
+  var rings=[];
+  [[2.5,0xb85c38,.12],[3.3,0xc9973a,.07],[4.1,0xd4826a,.05]].forEach(function(d){
+    var ring=new THREE.Mesh(new THREE.TorusGeometry(d[0],.02,8,80),new THREE.MeshBasicMaterial({color:d[1],transparent:true,opacity:d[2]}));
+    ring.rotation.x=Math.PI/3+Math.random()*.5;ring.rotation.z=Math.random()*Math.PI;
+    scene.add(ring);rings.push(ring);
+  });
+  var tets=[];
+  for(var i=0;i<12;i++){
+    var m=new THREE.Mesh(new THREE.TetrahedronGeometry(.08+Math.random()*.12),new THREE.MeshBasicMaterial({color:0xc9973a,transparent:true,opacity:.25+Math.random()*.3,wireframe:true}));
+    m.position.set((Math.random()-.5)*9,(Math.random()-.5)*7,(Math.random()-.5)*4);
+    m.userData={rx:.01,ry:.015,ph:Math.random()*Math.PI*2};
+    scene.add(m);tets.push(m);
+  }
+  var t=0;
+  (function loop(){requestAnimationFrame(loop);t+=.005;
+    shell.rotation.y-=.002;
+    rings[0].rotation.y+=.003;rings[1].rotation.y-=.0015;rings[2].rotation.z+=.001;
+    tets.forEach(function(m){m.rotation.x+=m.userData.rx;m.rotation.y+=m.userData.ry;m.position.y+=Math.sin(t+m.userData.ph)*.002;});
+    R.render(scene,cam);
+  })();
+}
+
+function initChScene(id,c1,c2,type){
+  var canvas=document.getElementById(id);if(!canvas)return;
+  var R=mkR(canvas);var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(50,1,.1,100);cam.position.z=6;
+  autoResize(R,cam,canvas);
+  var objs=[];
+  if(type==='iso'){
+    for(var i=0;i<55;i++){
+      var m=new THREE.Mesh(new THREE.IcosahedronGeometry(.06+Math.random()*.1,0),new THREE.MeshBasicMaterial({color:i%2===0?c1:c2,transparent:true,opacity:.35+Math.random()*.4,wireframe:i%3===0}));
+      m.position.set((Math.random()-.5)*14,(Math.random()-.5)*4.5,(Math.random()-.5)*3);
+      m.userData={rx:(Math.random()-.5)*.025,ry:(Math.random()-.5)*.025,ph:Math.random()*Math.PI*2};
+      scene.add(m);objs.push(m);
+    }
+  } else if(type==='torus'){
+    for(var i=0;i<12;i++){
+      var m=new THREE.Mesh(new THREE.TorusGeometry(.5+i*.28,.03,8,40),new THREE.MeshBasicMaterial({color:i%2===0?c1:c2,transparent:true,opacity:.12+(12-i)*.012}));
+      m.position.z=-i*.4;m.rotation.x=Math.PI/4;m.userData={rz:.005+i*.001};
+      scene.add(m);objs.push(m);
+    }
+    for(var i=0;i<35;i++){
+      var m=new THREE.Mesh(new THREE.SphereGeometry(.04,6,6),new THREE.MeshBasicMaterial({color:c2,transparent:true,opacity:.5}));
+      m.position.set((Math.random()-.5)*12,(Math.random()-.5)*4,(Math.random()-.5)*2);
+      m.userData={vy:.005,ph:Math.random()*Math.PI*2};
+      scene.add(m);objs.push(m);
+    }
+  } else {
+    for(var i=0;i<70;i++){
+      var m=new THREE.Mesh(new THREE.BoxGeometry(.07,.07,.07),new THREE.MeshBasicMaterial({color:i%2===0?c1:c2,transparent:true,opacity:.28+Math.random()*.3}));
+      m.position.set((Math.random()-.5)*14,(Math.random()-.5)*3.5,(Math.random()-.5)*2);
+      m.userData={rx:.012,ry:.015,vy:.003,ph:Math.random()*Math.PI*2};
+      scene.add(m);objs.push(m);
+    }
+  }
+  var t=0;
+  (function loop(){requestAnimationFrame(loop);t+=.01;
+    objs.forEach(function(o){
+      if(o.userData.rz)o.rotation.z+=o.userData.rz;
+      if(o.userData.rx){o.rotation.x+=o.userData.rx;o.rotation.y+=o.userData.ry;}
+      if(o.userData.vy)o.position.y+=Math.sin(t+o.userData.ph)*.003;
+    });
+    R.render(scene,cam);
+  })();
+}
+
+function initFinale(){
+  var canvas=document.getElementById('finaleCanvas');if(!canvas)return;
+  var R=mkR(canvas);var scene=new THREE.Scene();
+  var cam=new THREE.PerspectiveCamera(60,1,.1,100);cam.position.z=8;
+  autoResize(R,cam,canvas);
+  var bursts=[];var cols=[0xb85c38,0xd4826a,0xc9973a,0xfdf6ec,0xa0522d];
+  function burst(){
+    var cx=(Math.random()-.5)*12,cy=(Math.random()-.5)*6,cz=(Math.random()-.5)*3;
+    var col=cols[Math.floor(Math.random()*cols.length)];
+    var ps=[];
+    var count=28+Math.floor(Math.random()*18);
+    for(var i=0;i<count;i++){
+      var m=new THREE.Mesh(new THREE.SphereGeometry(.045,4,4),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:1}));
+      m.position.set(cx,cy,cz);
+      var th=Math.random()*Math.PI*2,ph=Math.random()*Math.PI,sp=.04+Math.random()*.06;
+      m.userData={vx:Math.sin(ph)*Math.cos(th)*sp,vy:Math.sin(ph)*Math.sin(th)*sp,vz:Math.cos(ph)*sp*.4};
+      scene.add(m);ps.push(m);
+    }
+    bursts.push({ps:ps,life:1});
+  }
+  setInterval(burst,550);burst();
+  (function loop(){requestAnimationFrame(loop);
+    for(var i=bursts.length-1;i>=0;i--){
+      var b=bursts[i];b.life-=.016;
+      b.ps.forEach(function(p){p.position.x+=p.userData.vx;p.position.y+=p.userData.vy;p.position.z+=p.userData.vz;p.userData.vy-=.001;p.material.opacity=Math.max(0,b.life);});
+      if(b.life<=0){b.ps.forEach(function(p){scene.remove(p);p.geometry.dispose();p.material.dispose();});bursts.splice(i,1);}
+    }
+    R.render(scene,cam);
+  })();
+}
+
+var revObs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
+document.querySelectorAll('.memory-card,.polaroid,.quote-block,.timeline-item,.highlight-bar,.love-list li,.letter-paper').forEach(function(el,i){el.style.transitionDelay=(i%5)*.07+'s';revObs.observe(el);});
+
+var secEls=document.querySelectorAll('[data-sec]');
+var dots=document.querySelectorAll('.nav-dot');
+var secObs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){var idx=e.target.dataset.sec;dots.forEach(function(d,i){d.classList.toggle('active',i==idx);});}});},{threshold:.35});
+secEls.forEach(function(s){secObs.observe(s);});
+function goTo(i){if(secEls[i])secEls[i].scrollIntoView({behavior:'smooth'});}
+</script>
+</body>
+</html>
